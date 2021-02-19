@@ -104,6 +104,7 @@ bool OPWInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
     return false;
   }
 
+  bool withinLimits = true;
   for (int i = 0; i < vec.size(); ++i)
   {
     if ((vec[i] < limits_.joint_limits(i, 0)) || (vec(i) > limits_.joint_limits(i, 1)))
@@ -113,10 +114,11 @@ bool OPWInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
                               limits_.joint_limits(i, 0),
                               vec(i),
                               limits_.joint_limits(i, 1));
+      withinLimits = false;
     }
   }
 
-  return true;
+  return withinLimits;
 }
 
 unsigned int OPWInvKin::numJoints() const { return 6; }

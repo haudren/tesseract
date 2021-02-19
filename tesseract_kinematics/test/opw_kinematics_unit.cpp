@@ -123,6 +123,27 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
 
   // Test setJointLimits
   runKinSetJointLimitsTest(*inv_kin);
+
+  // Test checkJoints
+  Eigen::VectorXd too_small(inv_kin->numJoints() - 1);
+  Eigen::VectorXd too_big(inv_kin->numJoints() + 1);
+  // Exactly average of limits
+  const auto& joint_limits = inv_kin->getLimits().joint_limits;
+  Eigen::VectorXd within_limits = joint_limits.rowwise().sum() / 2;
+
+  // Set one angle to be below lower limit
+  Eigen::VectorXd below_limits = within_limits;
+  below_limits(0) = target_limits.joint_limits(0, 0) - 100;
+
+  // And another one that's beyond upper limit
+  Eigen::VectorXd beyond_limits = within_limits;
+  beyond_limits(3) = target_limits.joint_limits(3, 1) + 100;
+
+  EXPECT_FALSE(inv_kin->checkJoints(too_small));
+  EXPECT_FALSE(inv_kin->checkJoints(too_big));
+  EXPECT_FALSE(inv_kin->checkJoints(below_limits));
+  EXPECT_FALSE(inv_kin->checkJoints(beyond_limits));
+  EXPECT_TRUE(inv_kin->checkJoints(within_limits));
 }
 
 int main(int argc, char** argv)
